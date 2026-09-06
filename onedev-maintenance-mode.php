@@ -178,7 +178,10 @@ class Onedev_Maintenance_Mode {
                     </tr>
                 </table>
 
-                <?php submit_button(); ?>
+                <p class="submit" style="display: flex; gap: 15px; align-items: center;">
+                    <?php submit_button( 'Enregistrer les modifications', 'primary', 'submit', false ); ?>
+                    <a href="<?php echo esc_url( home_url( '?preview_onedev_maintenance=1' ) ); ?>" target="_blank" class="button button-secondary">👀 Prévisualiser la page</a>
+                </p>
             </form>
         </div>
         <?php
@@ -212,12 +215,15 @@ class Onedev_Maintenance_Mode {
 
     public function render_maintenance_page() {
         $settings = $this->get_settings();
+        
+        // التحقق مما إذا كان المدير يطلب معاينة الصفحة
+        $is_preview = isset( $_GET['preview_onedev_maintenance'] ) && current_user_can( 'manage_options' );
 
-        if ( empty( $settings['enabled'] ) ) {
+        if ( empty( $settings['enabled'] ) && ! $is_preview ) {
             return;
         }
 
-        if ( current_user_can( 'manage_options' ) ) {
+        if ( current_user_can( 'manage_options' ) && ! $is_preview ) {
             return;
         }
 
