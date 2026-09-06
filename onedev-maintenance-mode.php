@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Onedev Mode Maintenance Simple
  * Description: Un plugin léger et avancé de mode maintenance : activation, texte, logo, couleurs, image de fond, réseaux sociaux et formulaire de contact AJAX.
- * Version: 1.4.1
+ * Version: 1.5.0
  * Author: onedev.ovh
  * Author URI: https://onedev.ovh
  * Requires PHP: 8.1
@@ -37,66 +37,61 @@ class Onedev_Maintenance_Mode {
 
     public function get_settings() {
         $defaults = array(
-            'enabled'     => 1,
-            'title'       => 'Nous mettons à jour le site',
-            'message'     => 'Notre site est actuellement en mode maintenance pour vous offrir une meilleure expérience. Nous serons de retour dans très peu de temps.',
-            'logo'        => '',
-            'badge_text'  => 'En Mode Maintenance',
-            'bg_image'    => '',
-            'brand_color' => '#111827',
-            'email'       => '',
-            'facebook'    => '',
-            'instagram'   => '',
-            'linkedin'    => '',
-            'enable_form' => 0,
+            'enabled'         => 1,
+            'title'           => 'Nous mettons à jour le site',
+            'message'         => 'Notre site est actuellement en mode maintenance pour vous offrir une meilleure expérience. Nous serons de retour dans très peu de temps.',
+            'logo'            => '',
+            'badge_text'      => 'En Mode Maintenance',
+            'brand_color'     => '#111827',
+            'bg_color'        => '#f3f4f6',
+            'card_theme'      => 'light',
+            'bg_image'        => '',
+            'overlay_opacity' => 85,
+            'custom_css'      => '',
+            'email'           => '',
+            'facebook'        => '',
+            'instagram'       => '',
+            'linkedin'        => '',
+            'enable_form'     => 0,
         );
 
         $saved = get_option( $this->option_name, array() );
-
         return wp_parse_args( $saved, $defaults );
     }
 
     public function register_settings() {
-        register_setting(
-            'onedev_maintenance_group',
-            $this->option_name,
-            array( $this, 'sanitize_settings' )
-        );
+        register_setting( 'onedev_maintenance_group', $this->option_name, array( $this, 'sanitize_settings' ) );
     }
 
     public function sanitize_settings( array $input ) {
         return array(
-            'enabled'     => ! empty( $input['enabled'] ) ? 1 : 0,
-            'title'       => isset( $input['title'] ) ? sanitize_text_field( $input['title'] ) : '',
-            'message'     => isset( $input['message'] ) ? sanitize_textarea_field( $input['message'] ) : '',
-            'logo'        => isset( $input['logo'] ) ? esc_url_raw( $input['logo'] ) : '',
-            'badge_text'  => isset( $input['badge_text'] ) ? sanitize_text_field( $input['badge_text'] ) : '',
-            'bg_image'    => isset( $input['bg_image'] ) ? esc_url_raw( $input['bg_image'] ) : '',
-            'brand_color' => isset( $input['brand_color'] ) ? sanitize_hex_color( $input['brand_color'] ) : '#111827',
-            'email'       => isset( $input['email'] ) ? sanitize_email( $input['email'] ) : '',
-            'facebook'    => isset( $input['facebook'] ) ? esc_url_raw( $input['facebook'] ) : '',
-            'instagram'   => isset( $input['instagram'] ) ? esc_url_raw( $input['instagram'] ) : '',
-            'linkedin'    => isset( $input['linkedin'] ) ? esc_url_raw( $input['linkedin'] ) : '',
-            'enable_form' => ! empty( $input['enable_form'] ) ? 1 : 0,
+            'enabled'         => ! empty( $input['enabled'] ) ? 1 : 0,
+            'title'           => isset( $input['title'] ) ? sanitize_text_field( $input['title'] ) : '',
+            'message'         => isset( $input['message'] ) ? sanitize_textarea_field( $input['message'] ) : '',
+            'logo'            => isset( $input['logo'] ) ? esc_url_raw( $input['logo'] ) : '',
+            'badge_text'      => isset( $input['badge_text'] ) ? sanitize_text_field( $input['badge_text'] ) : '',
+            'brand_color'     => isset( $input['brand_color'] ) ? sanitize_hex_color( $input['brand_color'] ) : '#111827',
+            'bg_color'        => isset( $input['bg_color'] ) ? sanitize_hex_color( $input['bg_color'] ) : '#f3f4f6',
+            'card_theme'      => ( isset( $input['card_theme'] ) && in_array( $input['card_theme'], array('light', 'dark') ) ) ? $input['card_theme'] : 'light',
+            'bg_image'        => isset( $input['bg_image'] ) ? esc_url_raw( $input['bg_image'] ) : '',
+            'overlay_opacity' => isset( $input['overlay_opacity'] ) ? absint( $input['overlay_opacity'] ) : 85,
+            'custom_css'      => isset( $input['custom_css'] ) ? sanitize_textarea_field( $input['custom_css'] ) : '',
+            'email'           => isset( $input['email'] ) ? sanitize_email( $input['email'] ) : '',
+            'facebook'        => isset( $input['facebook'] ) ? esc_url_raw( $input['facebook'] ) : '',
+            'instagram'       => isset( $input['instagram'] ) ? esc_url_raw( $input['instagram'] ) : '',
+            'linkedin'        => isset( $input['linkedin'] ) ? esc_url_raw( $input['linkedin'] ) : '',
+            'enable_form'     => ! empty( $input['enable_form'] ) ? 1 : 0,
         );
     }
 
     public function admin_menu() {
-        add_options_page(
-            'Onedev Maintenance',
-            'Onedev Maintenance',
-            'manage_options',
-            'onedev-maintenance-mode',
-            array( $this, 'settings_page' )
-        );
+        add_options_page( 'Onedev Maintenance', 'Onedev Maintenance', 'manage_options', 'onedev-maintenance-mode', array( $this, 'settings_page' ) );
     }
 
     public function admin_assets( string $hook ) {
         if ( 'settings_page_onedev-maintenance-mode' !== $hook ) return;
 
-        // استدعاء ملف الـ CSS الخاص بلوحة التحكم
         wp_enqueue_style( 'onedev-admin-css', plugins_url( 'assets/css/admin.css', __FILE__ ), array(), '1.0.0' );
-
         wp_enqueue_style( 'wp-color-picker' );
         wp_enqueue_script( 'wp-color-picker' );
         wp_enqueue_media();
@@ -104,6 +99,12 @@ class Onedev_Maintenance_Mode {
         wp_add_inline_script( 'jquery-core', "
             jQuery(document).ready(function($){
                 $('.onedev-color-picker').wpColorPicker();
+                
+                // Update opacity value display
+                $('#onedev_overlay_opacity').on('input', function() {
+                    $('#onedev_opacity_val').text($(this).val() + '%');
+                });
+
                 $('.onedev-upload-btn').on('click', function(e){
                     e.preventDefault();
                     let button = $(this);
@@ -113,7 +114,7 @@ class Onedev_Maintenance_Mode {
                     mediaFrame.on('select', function(){
                         const attachment = mediaFrame.state().get('selection').first().toJSON();
                         $(targetInput).val(attachment.url);
-                        $(targetPreview).html('<img src=\"' + attachment.url + '\" style=\"max-width:180px;height:auto;border-radius:8px;margin-top:10px;border:1px solid #ddd;\" />');
+                        $(targetPreview).html('<img src=\"' + attachment.url + '\" style=\"max-width:150px;height:auto;border-radius:8px;margin-top:10px;border:1px solid #ddd;\" />');
                     });
                     mediaFrame.open();
                 });
@@ -170,12 +171,30 @@ class Onedev_Maintenance_Mode {
                 </div>
 
                 <div class="onedev-card">
-                    <h2 class="onedev-card-header">2. Apparence & Design</h2>
+                    <h2 class="onedev-card-header">2. Apparence & Design (Pro)</h2>
                     <div class="onedev-card-body">
                         <table class="form-table">
                             <tr>
-                                <th scope="row"><label for="onedev_brand_color">Couleur principale</label></th>
-                                <td><input type="text" id="onedev_brand_color" class="onedev-color-picker" name="<?php echo esc_attr( $this->option_name ); ?>[brand_color]" value="<?php echo esc_attr( $settings['brand_color'] ); ?>"></td>
+                                <th scope="row"><label for="onedev_brand_color">Couleur de la marque</label></th>
+                                <td>
+                                    <input type="text" id="onedev_brand_color" class="onedev-color-picker" name="<?php echo esc_attr( $this->option_name ); ?>[brand_color]" value="<?php echo esc_attr( $settings['brand_color'] ); ?>">
+                                    <p class="description">Couleur du badge et des boutons.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_bg_color">Couleur d'arrière-plan</label></th>
+                                <td>
+                                    <input type="text" id="onedev_bg_color" class="onedev-color-picker" name="<?php echo esc_attr( $this->option_name ); ?>[bg_color]" value="<?php echo esc_attr( $settings['bg_color'] ); ?>">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_card_theme">Thème de la boîte (Carte)</label></th>
+                                <td>
+                                    <select id="onedev_card_theme" name="<?php echo esc_attr( $this->option_name ); ?>[card_theme]">
+                                        <option value="light" <?php selected( 'light', $settings['card_theme'] ); ?>>☀️ Clair (Blanc)</option>
+                                        <option value="dark" <?php selected( 'dark', $settings['card_theme'] ); ?>>🌙 Sombre (Noir)</option>
+                                    </select>
+                                </td>
                             </tr>
                             <tr>
                                 <th scope="row">Logo du site</th>
@@ -193,10 +212,24 @@ class Onedev_Maintenance_Mode {
                                 <td>
                                     <input type="hidden" id="onedev_bg_image" name="<?php echo esc_attr( $this->option_name ); ?>[bg_image]" value="<?php echo esc_url( $settings['bg_image'] ); ?>">
                                     <p>
-                                        <button class="button button-secondary onedev-upload-btn" data-target="#onedev_bg_image" data-preview="#onedev-bg-preview">Choisir une image de fond</button> 
+                                        <button class="button button-secondary onedev-upload-btn" data-target="#onedev_bg_image" data-preview="#onedev-bg-preview">Choisir une image</button> 
                                         <button class="button onedev-remove-btn" data-target="#onedev_bg_image" data-preview="#onedev-bg-preview">Supprimer</button>
                                     </p>
                                     <div id="onedev-bg-preview"><?php if ( ! empty( $settings['bg_image'] ) ) : ?><img src="<?php echo esc_url( $settings['bg_image'] ); ?>" style="max-width:150px;border-radius:8px;margin-top:10px;border:1px solid #ddd;" /><?php endif; ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_overlay_opacity">Opacité du filtre de fond</label></th>
+                                <td>
+                                    <input type="range" id="onedev_overlay_opacity" name="<?php echo esc_attr( $this->option_name ); ?>[overlay_opacity]" min="0" max="100" value="<?php echo esc_attr( $settings['overlay_opacity'] ); ?>" style="width: 200px; vertical-align: middle;">
+                                    <span id="onedev_opacity_val" style="font-weight: 600; margin-left: 10px;"><?php echo esc_attr( $settings['overlay_opacity'] ); ?>%</span>
+                                    <p class="description">Assombrit ou éclaircit l'image de fond pour mieux faire ressortir le texte.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_custom_css">CSS Personnalisé</label></th>
+                                <td>
+                                    <textarea id="onedev_custom_css" name="<?php echo esc_attr( $this->option_name ); ?>[custom_css]" rows="4" style="font-family: monospace; background: #f0f0f1;" placeholder="Ex: body { font-family: 'Arial', sans-serif; }"><?php echo esc_textarea( $settings['custom_css'] ); ?></textarea>
                                 </td>
                             </tr>
                         </table>
@@ -217,24 +250,23 @@ class Onedev_Maintenance_Mode {
                                         </label>
                                         <strong>Afficher un formulaire de contact AJAX</strong>
                                     </div>
-                                    <p class="description" style="margin-top: 8px;">Les messages seront envoyés à l'adresse Email ci-dessous.</p>
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="onedev_email">Adresse Email de réception</label></th>
-                                <td><input type="email" id="onedev_email" name="<?php echo esc_attr( $this->option_name ); ?>[email]" value="<?php echo esc_attr( $settings['email'] ); ?>" placeholder="contact@votre-site.com"></td>
+                                <td><input type="email" id="onedev_email" name="<?php echo esc_attr( $this->option_name ); ?>[email]" value="<?php echo esc_attr( $settings['email'] ); ?>"></td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="onedev_facebook">Lien Facebook</label></th>
-                                <td><input type="url" id="onedev_facebook" name="<?php echo esc_attr( $this->option_name ); ?>[facebook]" value="<?php echo esc_url( $settings['facebook'] ); ?>" placeholder="https://facebook.com/..."></td>
+                                <td><input type="url" id="onedev_facebook" name="<?php echo esc_attr( $this->option_name ); ?>[facebook]" value="<?php echo esc_url( $settings['facebook'] ); ?>"></td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="onedev_instagram">Lien Instagram</label></th>
-                                <td><input type="url" id="onedev_instagram" name="<?php echo esc_attr( $this->option_name ); ?>[instagram]" value="<?php echo esc_url( $settings['instagram'] ); ?>" placeholder="https://instagram.com/..."></td>
+                                <td><input type="url" id="onedev_instagram" name="<?php echo esc_attr( $this->option_name ); ?>[instagram]" value="<?php echo esc_url( $settings['instagram'] ); ?>"></td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="onedev_linkedin">Lien LinkedIn</label></th>
-                                <td><input type="url" id="onedev_linkedin" name="<?php echo esc_attr( $this->option_name ); ?>[linkedin]" value="<?php echo esc_url( $settings['linkedin'] ); ?>" placeholder="https://linkedin.com/in/..."></td>
+                                <td><input type="url" id="onedev_linkedin" name="<?php echo esc_attr( $this->option_name ); ?>[linkedin]" value="<?php echo esc_url( $settings['linkedin'] ); ?>"></td>
                             </tr>
                         </table>
                     </div>
@@ -259,12 +291,8 @@ class Onedev_Maintenance_Mode {
         $email = isset($_POST['onedev_email']) ? sanitize_email($_POST['onedev_email']) : '';
         $message = isset($_POST['onedev_message']) ? sanitize_textarea_field($_POST['onedev_message']) : '';
 
-        if ( empty($name) || empty($email) || empty($message) ) {
-            wp_send_json_error("Veuillez remplir tous les champs.");
-        }
-        if ( ! is_email($email) ) {
-            wp_send_json_error("Adresse email invalide.");
-        }
+        if ( empty($name) || empty($email) || empty($message) ) wp_send_json_error("Veuillez remplir tous les champs.");
+        if ( ! is_email($email) ) wp_send_json_error("Adresse email invalide.");
 
         $settings = $this->get_settings();
         $to = !empty($settings['email']) ? $settings['email'] : get_option('admin_email');
@@ -272,11 +300,8 @@ class Onedev_Maintenance_Mode {
         $body = "Nom: $name\nEmail: $email\n\nMessage:\n$message";
         $headers = array('Reply-To: ' . $name . ' <' . $email . '>');
 
-        if ( wp_mail($to, $subject, $body, $headers) ) {
-            wp_send_json_success("Merci ! Votre message a été envoyé avec succès.");
-        } else {
-            wp_send_json_error("Désolé, une erreur s'est produite lors de l'envoi.");
-        }
+        if ( wp_mail($to, $subject, $body, $headers) ) wp_send_json_success("Merci ! Votre message a été envoyé avec succès.");
+        else wp_send_json_error("Désolé, une erreur s'est produite lors de l'envoi.");
     }
 
     public function clear_caches() {
@@ -307,8 +332,25 @@ class Onedev_Maintenance_Mode {
 
         $css_url = plugins_url( 'assets/css/maintenance.css', __FILE__ );
         $ajax_url = admin_url( 'admin-ajax.php' );
-        $brand_color = esc_attr( $settings['brand_color'] );
         $clean_message = strip_tags( $settings['message'] );
+
+        // Dynamic Styles Preparation
+        $brand_color = esc_attr( $settings['brand_color'] );
+        $bg_color    = esc_attr( $settings['bg_color'] );
+        $opacity_val = intval( $settings['overlay_opacity'] ) / 100;
+        
+        $overlay_rgb = ( $settings['card_theme'] === 'dark' ) ? '0, 0, 0' : '255, 255, 255';
+        $dark_theme_css = '';
+
+        if ( $settings['card_theme'] === 'dark' ) {
+            $dark_theme_css = '
+            :root { --card-bg: #1f2937; --text-main: #f9fafb; --text-muted: #9ca3af; }
+            .contact-form { background: #374151; border-color: #4b5563; }
+            .contact-form input, .contact-form textarea { background: #1f2937; color: #fff; border-color: #4b5563; }
+            .contact-form input:focus, .contact-form textarea:focus { box-shadow: 0 0 0 3px rgba(255,255,255,0.1); }
+            .social-links a { background: #374151; }
+            ';
+        }
 
         $logo_html = ! empty( $settings['logo'] ) ? '<div class="logo-container"><img src="' . esc_url( $settings['logo'] ) . '" alt="Logo" /></div>' : '';
         $bg_html = ! empty( $settings['bg_image'] ) ? '<div class="bg-image" style="background-image: url(\'' . esc_url( $settings['bg_image'] ) . '\');"></div><div class="bg-overlay"></div>' : '';
@@ -350,8 +392,16 @@ class Onedev_Maintenance_Mode {
             <meta name="robots" content="noindex, follow">
             <meta name="description" content="' . esc_attr( wp_trim_words( $clean_message, 20 ) ) . '">
             <title>' . esc_html( $settings['title'] ) . ' - ' . esc_html( get_bloginfo( 'name' ) ) . '</title>
-            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.4.1">
-            <style>:root { --brand-color: ' . $brand_color . '; }</style>
+            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.5.0">
+            <style>
+                :root { 
+                    --brand-color: ' . $brand_color . '; 
+                    --primary-bg: ' . $bg_color . ';
+                }
+                .bg-overlay { background: rgba(' . $overlay_rgb . ', ' . $opacity_val . ') !important; }
+                ' . $dark_theme_css . '
+                ' . wp_strip_all_tags( $settings['custom_css'] ) . '
+            </style>
         </head>
         <body>
             ' . $bg_html . '
