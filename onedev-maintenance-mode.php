@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Onedev Mode Maintenance Simple
  * Description: Un plugin léger et avancé de mode maintenance : activation, texte, logo, couleurs, image de fond, réseaux sociaux et formulaire de contact AJAX.
- * Version: 1.3.0
+ * Version: 1.4.1
  * Author: onedev.ovh
  * Author URI: https://onedev.ovh
  * Requires PHP: 8.1
@@ -49,7 +49,7 @@ class Onedev_Maintenance_Mode {
             'facebook'    => '',
             'instagram'   => '',
             'linkedin'    => '',
-            'enable_form' => 0, // Option pour le formulaire
+            'enable_form' => 0,
         );
 
         $saved = get_option( $this->option_name, array() );
@@ -127,47 +127,249 @@ class Onedev_Maintenance_Mode {
     public function settings_page() {
         $settings = $this->get_settings();
         ?>
-        <div class="wrap">
-            <h1>⚙️ Onedev Maintenance Mode Pro</h1>
+        <style>
+            .onedev-admin-wrap {
+                max-width: 850px;
+                margin-top: 20px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            }
+            .onedev-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .onedev-header h1 {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 600;
+                color: #1d2327;
+            }
+            .onedev-card {
+                background: #fff;
+                border: 1px solid #c3c4c7;
+                border-radius: 8px;
+                box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+                padding: 0;
+                margin-bottom: 24px;
+                overflow: hidden;
+            }
+            .onedev-card-header {
+                background: #f6f7f7;
+                border-bottom: 1px solid #c3c4c7;
+                padding: 15px 20px;
+                margin: 0;
+                font-size: 16px;
+                font-weight: 600;
+                color: #1d2327;
+            }
+            .onedev-card-body {
+                padding: 20px;
+            }
+            .onedev-admin-wrap .form-table {
+                margin: 0;
+            }
+            .onedev-admin-wrap .form-table th {
+                padding: 15px 10px 15px 0;
+                width: 240px;
+                font-weight: 500;
+                color: #3c434a;
+            }
+            .onedev-admin-wrap input[type="text"],
+            .onedev-admin-wrap input[type="email"],
+            .onedev-admin-wrap input[type="url"],
+            .onedev-admin-wrap textarea {
+                width: 100%;
+                max-width: 100%;
+                border-radius: 4px;
+                border: 1px solid #8c8f94;
+                padding: 8px 12px;
+                box-shadow: inset 0 1px 2px rgba(0,0,0,.03);
+            }
+            .onedev-action-bar {
+                background: #fff;
+                border: 1px solid #c3c4c7;
+                border-radius: 8px;
+                padding: 15px 20px;
+                display: flex;
+                gap: 15px;
+                align-items: center;
+                box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+                margin-bottom: 40px;
+            }
+            /* Custom Toggle Switch */
+            .onedev-toggle {
+                position: relative;
+                display: inline-block;
+                width: 44px;
+                height: 24px;
+                vertical-align: middle;
+            }
+            .onedev-toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .onedev-slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-color: #ccc;
+                transition: .4s;
+                border-radius: 24px;
+            }
+            .onedev-slider:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            }
+            .onedev-toggle input:checked + .onedev-slider {
+                background-color: #2271b1;
+            }
+            .onedev-toggle input:focus + .onedev-slider {
+                box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.4);
+            }
+            .onedev-toggle input:checked + .onedev-slider:before {
+                transform: translateX(20px);
+            }
+            .onedev-toggle-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+        </style>
+
+        <div class="wrap onedev-admin-wrap">
+            <div class="onedev-header">
+                <h1>⚙️ Onedev Maintenance Mode Pro</h1>
+            </div>
+
             <form method="post" action="options.php">
                 <?php settings_fields( 'onedev_maintenance_group' ); ?>
-                <table class="form-table">
-                    <tr><th colspan="2" style="padding-top:20px;"><h2 style="margin:0;">1. Configuration Générale</h2><hr></th></tr>
-                    <tr><th scope="row">Statut</th><td><label><input type="checkbox" name="<?php echo esc_attr( $this->option_name ); ?>[enabled]" value="1" <?php checked( 1, $settings['enabled'] ); ?>> <strong>Activer la page de maintenance</strong></label></td></tr>
-                    <tr><th scope="row"><label for="onedev_title">Titre principal</label></th><td><input type="text" id="onedev_title" class="regular-text" name="<?php echo esc_attr( $this->option_name ); ?>[title]" value="<?php echo esc_attr( $settings['title'] ); ?>"></td></tr>
-                    <tr><th scope="row"><label for="onedev_message">Message descriptif</label></th><td><textarea id="onedev_message" class="large-text" rows="4" name="<?php echo esc_attr( $this->option_name ); ?>[message]"><?php echo esc_textarea( $settings['message'] ); ?></textarea></td></tr>
-                    <tr><th scope="row"><label for="onedev_badge_text">Texte du badge</label></th><td><input type="text" id="onedev_badge_text" class="regular-text" name="<?php echo esc_attr( $this->option_name ); ?>[badge_text]" value="<?php echo esc_attr( $settings['badge_text'] ); ?>"></td></tr>
 
-                    <tr><th colspan="2" style="padding-top:20px;"><h2 style="margin:0;">2. Apparence & Design</h2><hr></th></tr>
-                    <tr><th scope="row"><label for="onedev_brand_color">Couleur principale</label></th><td><input type="text" id="onedev_brand_color" class="onedev-color-picker" name="<?php echo esc_attr( $this->option_name ); ?>[brand_color]" value="<?php echo esc_attr( $settings['brand_color'] ); ?>"></td></tr>
-                    <tr>
-                        <th scope="row">Logo du site</th>
-                        <td>
-                            <input type="hidden" id="onedev_logo" name="<?php echo esc_attr( $this->option_name ); ?>[logo]" value="<?php echo esc_url( $settings['logo'] ); ?>">
-                            <p><button class="button button-secondary onedev-upload-btn" data-target="#onedev_logo" data-preview="#onedev-logo-preview">Choisir un logo</button> <button class="button onedev-remove-btn" data-target="#onedev_logo" data-preview="#onedev-logo-preview">Supprimer</button></p>
-                            <div id="onedev-logo-preview"><?php if ( ! empty( $settings['logo'] ) ) : ?><img src="<?php echo esc_url( $settings['logo'] ); ?>" style="max-width:180px;border-radius:8px;margin-top:10px;" /><?php endif; ?></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Image de fond</th>
-                        <td>
-                            <input type="hidden" id="onedev_bg_image" name="<?php echo esc_attr( $this->option_name ); ?>[bg_image]" value="<?php echo esc_url( $settings['bg_image'] ); ?>">
-                            <p><button class="button button-secondary onedev-upload-btn" data-target="#onedev_bg_image" data-preview="#onedev-bg-preview">Choisir une image de fond</button> <button class="button onedev-remove-btn" data-target="#onedev_bg_image" data-preview="#onedev-bg-preview">Supprimer</button></p>
-                            <div id="onedev-bg-preview"><?php if ( ! empty( $settings['bg_image'] ) ) : ?><img src="<?php echo esc_url( $settings['bg_image'] ); ?>" style="max-width:180px;border-radius:8px;margin-top:10px;border:1px solid #ddd;" /><?php endif; ?></div>
-                        </td>
-                    </tr>
+                <!-- CARTE 1: Configuration Générale -->
+                <div class="onedev-card">
+                    <h2 class="onedev-card-header">1. Configuration Générale</h2>
+                    <div class="onedev-card-body">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Statut du site</th>
+                                <td>
+                                    <div class="onedev-toggle-wrapper">
+                                        <label class="onedev-toggle">
+                                            <input type="checkbox" name="<?php echo esc_attr( $this->option_name ); ?>[enabled]" value="1" <?php checked( 1, $settings['enabled'] ); ?>>
+                                            <span class="onedev-slider"></span>
+                                        </label>
+                                        <strong>Activer la page de maintenance</strong>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_title">Titre principal</label></th>
+                                <td><input type="text" id="onedev_title" name="<?php echo esc_attr( $this->option_name ); ?>[title]" value="<?php echo esc_attr( $settings['title'] ); ?>"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_message">Message descriptif</label></th>
+                                <td><textarea id="onedev_message" rows="4" name="<?php echo esc_attr( $this->option_name ); ?>[message]"><?php echo esc_textarea( $settings['message'] ); ?></textarea></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_badge_text">Texte du badge</label></th>
+                                <td><input type="text" id="onedev_badge_text" name="<?php echo esc_attr( $this->option_name ); ?>[badge_text]" value="<?php echo esc_attr( $settings['badge_text'] ); ?>"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
 
-                    <tr><th colspan="2" style="padding-top:20px;"><h2 style="margin:0;">3. Contact & Réseaux Sociaux</h2><hr></th></tr>
-                    <tr><th scope="row">Formulaire de contact</th><td><label><input type="checkbox" name="<?php echo esc_attr( $this->option_name ); ?>[enable_form]" value="1" <?php checked( 1, $settings['enable_form'] ); ?>> <strong>Afficher un formulaire de contact AJAX</strong> (Les messages seront envoyés à l'adresse Email ci-dessous)</label></td></tr>
-                    <tr><th scope="row"><label for="onedev_email">Adresse Email</label></th><td><input type="email" id="onedev_email" class="regular-text" name="<?php echo esc_attr( $this->option_name ); ?>[email]" value="<?php echo esc_attr( $settings['email'] ); ?>" placeholder="contact@votre-site.com"></td></tr>
-                    <tr><th scope="row"><label for="onedev_facebook">Lien Facebook</label></th><td><input type="url" id="onedev_facebook" class="regular-text" name="<?php echo esc_attr( $this->option_name ); ?>[facebook]" value="<?php echo esc_url( $settings['facebook'] ); ?>"></td></tr>
-                    <tr><th scope="row"><label for="onedev_instagram">Lien Instagram</label></th><td><input type="url" id="onedev_instagram" class="regular-text" name="<?php echo esc_attr( $this->option_name ); ?>[instagram]" value="<?php echo esc_url( $settings['instagram'] ); ?>"></td></tr>
-                    <tr><th scope="row"><label for="onedev_linkedin">Lien LinkedIn</label></th><td><input type="url" id="onedev_linkedin" class="regular-text" name="<?php echo esc_attr( $this->option_name ); ?>[linkedin]" value="<?php echo esc_url( $settings['linkedin'] ); ?>"></td></tr>
-                </table>
-                <p class="submit" style="display: flex; gap: 15px; align-items: center; margin-top: 30px;">
+                <!-- CARTE 2: Apparence & Design -->
+                <div class="onedev-card">
+                    <h2 class="onedev-card-header">2. Apparence & Design</h2>
+                    <div class="onedev-card-body">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row"><label for="onedev_brand_color">Couleur principale</label></th>
+                                <td><input type="text" id="onedev_brand_color" class="onedev-color-picker" name="<?php echo esc_attr( $this->option_name ); ?>[brand_color]" value="<?php echo esc_attr( $settings['brand_color'] ); ?>"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Logo du site</th>
+                                <td>
+                                    <input type="hidden" id="onedev_logo" name="<?php echo esc_attr( $this->option_name ); ?>[logo]" value="<?php echo esc_url( $settings['logo'] ); ?>">
+                                    <p>
+                                        <button class="button button-secondary onedev-upload-btn" data-target="#onedev_logo" data-preview="#onedev-logo-preview">Choisir un logo</button> 
+                                        <button class="button onedev-remove-btn" data-target="#onedev_logo" data-preview="#onedev-logo-preview">Supprimer</button>
+                                    </p>
+                                    <div id="onedev-logo-preview"><?php if ( ! empty( $settings['logo'] ) ) : ?><img src="<?php echo esc_url( $settings['logo'] ); ?>" style="max-width:150px;border-radius:8px;margin-top:10px;border:1px solid #ddd;" /><?php endif; ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Image de fond</th>
+                                <td>
+                                    <input type="hidden" id="onedev_bg_image" name="<?php echo esc_attr( $this->option_name ); ?>[bg_image]" value="<?php echo esc_url( $settings['bg_image'] ); ?>">
+                                    <p>
+                                        <button class="button button-secondary onedev-upload-btn" data-target="#onedev_bg_image" data-preview="#onedev-bg-preview">Choisir une image de fond</button> 
+                                        <button class="button onedev-remove-btn" data-target="#onedev_bg_image" data-preview="#onedev-bg-preview">Supprimer</button>
+                                    </p>
+                                    <div id="onedev-bg-preview"><?php if ( ! empty( $settings['bg_image'] ) ) : ?><img src="<?php echo esc_url( $settings['bg_image'] ); ?>" style="max-width:150px;border-radius:8px;margin-top:10px;border:1px solid #ddd;" /><?php endif; ?></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CARTE 3: Contact & Réseaux Sociaux -->
+                <div class="onedev-card">
+                    <h2 class="onedev-card-header">3. Contact & Réseaux Sociaux</h2>
+                    <div class="onedev-card-body">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Formulaire de contact</th>
+                                <td>
+                                    <div class="onedev-toggle-wrapper">
+                                        <label class="onedev-toggle">
+                                            <input type="checkbox" name="<?php echo esc_attr( $this->option_name ); ?>[enable_form]" value="1" <?php checked( 1, $settings['enable_form'] ); ?>>
+                                            <span class="onedev-slider"></span>
+                                        </label>
+                                        <strong>Afficher un formulaire de contact AJAX</strong>
+                                    </div>
+                                    <p class="description" style="margin-top: 8px;">Les messages seront envoyés à l'adresse Email ci-dessous.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_email">Adresse Email de réception</label></th>
+                                <td><input type="email" id="onedev_email" name="<?php echo esc_attr( $this->option_name ); ?>[email]" value="<?php echo esc_attr( $settings['email'] ); ?>" placeholder="contact@votre-site.com"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_facebook">Lien Facebook</label></th>
+                                <td><input type="url" id="onedev_facebook" name="<?php echo esc_attr( $this->option_name ); ?>[facebook]" value="<?php echo esc_url( $settings['facebook'] ); ?>" placeholder="https://facebook.com/..."></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_instagram">Lien Instagram</label></th>
+                                <td><input type="url" id="onedev_instagram" name="<?php echo esc_attr( $this->option_name ); ?>[instagram]" value="<?php echo esc_url( $settings['instagram'] ); ?>" placeholder="https://instagram.com/..."></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="onedev_linkedin">Lien LinkedIn</label></th>
+                                <td><input type="url" id="onedev_linkedin" name="<?php echo esc_attr( $this->option_name ); ?>[linkedin]" value="<?php echo esc_url( $settings['linkedin'] ); ?>" placeholder="https://linkedin.com/in/..."></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- BARRE D'ACTIONS -->
+                <div class="onedev-action-bar">
                     <?php submit_button( 'Enregistrer les modifications', 'primary', 'submit', false ); ?>
-                    <a href="<?php echo esc_url( home_url( '?preview_onedev_maintenance=1' ) ); ?>" target="_blank" class="button button-secondary">👀 Prévisualiser la page</a>
-                </p>
+                    <a href="<?php echo esc_url( home_url( '?preview_onedev_maintenance=1' ) ); ?>" target="_blank" class="button button-secondary">
+                        <span style="display:flex; align-items:center; gap:5px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Prévisualiser la page
+                        </span>
+                    </a>
+                </div>
+
             </form>
         </div>
         <?php
@@ -208,7 +410,7 @@ class Onedev_Maintenance_Mode {
     public function admin_notice() {
         $settings = $this->get_settings();
         if ( current_user_can( 'manage_options' ) && ! empty( $settings['enabled'] ) ) {
-            echo '<div class="notice notice-warning is-dismissible"><p><strong>⚠️ Onedev Maintenance Mode</strong> est actuellement <strong>ACTIF</strong>.</p></div>';
+            echo '<div class="notice notice-warning is-dismissible" style="border-left-color: #f56e28;"><p><strong>⚠️ Onedev Maintenance Mode</strong> est actuellement <strong>ACTIF</strong>.</p></div>';
         }
     }
 
@@ -232,7 +434,6 @@ class Onedev_Maintenance_Mode {
         $logo_html = ! empty( $settings['logo'] ) ? '<div class="logo-container"><img src="' . esc_url( $settings['logo'] ) . '" alt="Logo" /></div>' : '';
         $bg_html = ! empty( $settings['bg_image'] ) ? '<div class="bg-image" style="background-image: url(\'' . esc_url( $settings['bg_image'] ) . '\');"></div><div class="bg-overlay"></div>' : '';
         
-        // بناء فورم الاتصال
         $form_html = '';
         if ( ! empty( $settings['enable_form'] ) ) {
             $form_html = '
@@ -285,7 +486,6 @@ class Onedev_Maintenance_Mode {
             </main>
             ';
 
-            // سكربت AJAX (Vanilla JS - خفيف جداً)
             if ( ! empty( $settings['enable_form'] ) ) {
                 echo '
                 <script>
@@ -300,10 +500,7 @@ class Onedev_Maintenance_Mode {
                     msgBox.className = "form-message";
                     msgBox.innerText = "";
 
-                    fetch("' . esc_url($ajax_url) . '", {
-                        method: "POST",
-                        body: formData
-                    })
+                    fetch("' . esc_url($ajax_url) . '", { method: "POST", body: formData })
                     .then(response => response.json())
                     .then(data => {
                         btn.disabled = false;
