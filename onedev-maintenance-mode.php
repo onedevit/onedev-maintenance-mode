@@ -9,7 +9,6 @@
  * Requires at least: 6.6
  * Tested up to: 7.1
  * Text Domain: onedev-maintenance-mode
- * Plugin URI: https://onedev.ovh
  * License: GPL2
  */
 
