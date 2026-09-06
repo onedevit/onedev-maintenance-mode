@@ -213,10 +213,9 @@ class Onedev_Maintenance_Mode {
         }
     }
 
-    public function render_maintenance_page() {
+public function render_maintenance_page() {
         $settings = $this->get_settings();
         
-        // التحقق مما إذا كان المدير يطلب معاينة الصفحة
         $is_preview = isset( $_GET['preview_onedev_maintenance'] ) && current_user_can( 'manage_options' );
 
         if ( empty( $settings['enabled'] ) && ! $is_preview ) {
@@ -234,27 +233,29 @@ class Onedev_Maintenance_Mode {
 
         $logo_html = '';
         if ( ! empty( $settings['logo'] ) ) {
-            $logo_html = '<div style="margin-bottom:20px;"><img src="' . esc_url( $settings['logo'] ) . '" alt="Logo" style="max-width:120px;height:auto;margin:0 auto;" /></div>';
+            $logo_html = '<div class="logo-container"><img src="' . esc_url( $settings['logo'] ) . '" alt="' . esc_attr( get_bloginfo( 'name' ) ) . ' Logo" /></div>';
         }
 
-        // مسار ملف الـ CSS
         $css_url = plugins_url( 'assets/css/maintenance.css', __FILE__ );
+        $clean_message = strip_tags( $settings['message'] );
 
         echo '<!DOCTYPE html>
-        <html lang="fr">
+        <html lang="' . esc_attr( get_bloginfo( 'language' ) ) . '">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Maintenance</title>
-            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.1.0">
+            <meta name="robots" content="noindex, follow">
+            <meta name="description" content="' . esc_attr( wp_trim_words( $clean_message, 20 ) ) . '">
+            <title>' . esc_html( $settings['title'] ) . ' - ' . esc_html( get_bloginfo( 'name' ) ) . '</title>
+            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.2.0">
         </head>
         <body>
-            <div class="box">
+            <main class="box">
                 ' . $logo_html . '
                 <h1>' . esc_html( $settings['title'] ) . '</h1>
                 <p>' . nl2br( esc_html( $settings['message'] ) ) . '</p>
                 <div class="badge">' . esc_html( $settings['badge_text'] ) . '</div>
-            </div>
+            </main>
         </body>
         </html>';
         exit;
