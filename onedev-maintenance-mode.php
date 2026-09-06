@@ -270,7 +270,7 @@ class Onedev_Maintenance_Mode {
             <meta name="robots" content="noindex, follow">
             <meta name="description" content="' . esc_attr( wp_trim_words( $clean_message, 20 ) ) . '">
             <title>' . esc_html( $settings['title'] ) . ' - ' . esc_html( get_bloginfo( 'name' ) ) . '</title>
-            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.4.0">
+            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.4.1">
             <style>:root { --brand-color: ' . $brand_color . '; }</style>
         </head>
         <body>

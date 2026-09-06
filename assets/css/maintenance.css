@@ -246,3 +246,64 @@ p {
     display: block;
     animation: fadeIn 0.4s ease-in;
 }
+
+/* =========================================
+   Responsive Design (Smartphones & Tablettes)
+   ========================================= */
+
+@media (max-width: 768px) {
+    .box {
+        width: 95%;
+        padding: 40px 25px;
+        border-radius: 20px;
+    }
+
+    .logo-container img {
+        max-width: 120px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    p {
+        max-width: 100%; /* باش الكتيبة تاخو راحتها في التليفون */
+        font-size: 15px;
+    }
+
+    .badge {
+        margin-top: 24px;
+    }
+
+    .contact-form {
+        padding: 15px;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .box {
+        padding: 30px 15px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    .social-links a {
+        width: 36px;
+        height: 36px;
+    }
+
+    .social-links svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .contact-form input, 
+    .contact-form textarea,
+    .contact-form button.submit-btn {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+}
