@@ -231,57 +231,16 @@ class Onedev_Maintenance_Mode {
             $logo_html = '<div style="margin-bottom:20px;"><img src="' . esc_url( $settings['logo'] ) . '" alt="Logo" style="max-width:120px;height:auto;margin:0 auto;" /></div>';
         }
 
+        // مسار ملف الـ CSS
+        $css_url = plugins_url( 'assets/css/maintenance.css', __FILE__ );
+
         echo '<!DOCTYPE html>
         <html lang="fr">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Maintenance</title>
-            <style>
-                body{
-                    margin:0;
-                    padding:0;
-                    background:linear-gradient(135deg,#f4f7f6,#e9efee);
-                    font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    min-height:100vh;
-                    color:#333;
-                }
-                .box{
-                    width:90%;
-                    max-width:640px;
-                    background:#fff;
-                    border-radius:18px;
-                    padding:50px 35px;
-                    text-align:center;
-                    box-shadow:0 15px 40px rgba(0,0,0,0.10);
-                }
-                h1{
-                    margin:0 0 16px;
-                    font-size:32px;
-                    color:#1f2937;
-                }
-                p{
-                    margin:0;
-                    font-size:16px;
-                    line-height:1.7;
-                    color:#6b7280;
-                }
-                .badge{
-                    display:inline-block;
-                    margin-top:26px;
-                    background:#111827;
-                    color:#fff;
-                    padding:8px 16px;
-                    border-radius:999px;
-                    font-size:12px;
-                    font-weight:700;
-                    letter-spacing:1px;
-                    text-transform:uppercase;
-                }
-            </style>
+            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.1.0">
         </head>
         <body>
             <div class="box">
