@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Onedev Mode Maintenance Simple
  * Description: Un plugin léger et avancé de mode maintenance : activation, texte, logo, couleurs, image de fond, réseaux sociaux et formulaire de contact AJAX.
- * Version: 1.5.0
+ * Version: 1.5.1
  * Author: onedev.ovh
  * Author URI: https://onedev.ovh
  * Requires PHP: 8.1
@@ -72,7 +72,7 @@ class Onedev_Maintenance_Mode {
             'badge_text'      => isset( $input['badge_text'] ) ? sanitize_text_field( $input['badge_text'] ) : '',
             'brand_color'     => isset( $input['brand_color'] ) ? sanitize_hex_color( $input['brand_color'] ) : '#111827',
             'bg_color'        => isset( $input['bg_color'] ) ? sanitize_hex_color( $input['bg_color'] ) : '#f3f4f6',
-            'card_theme'      => ( isset( $input['card_theme'] ) && in_array( $input['card_theme'], array('light', 'dark') ) ) ? $input['card_theme'] : 'light',
+            'card_theme'      => ( isset( $input['card_theme'] ) && in_array( $input['card_theme'], array( 'light', 'dark' ), true ) ) ? $input['card_theme'] : 'light',
             'bg_image'        => isset( $input['bg_image'] ) ? esc_url_raw( $input['bg_image'] ) : '',
             'overlay_opacity' => isset( $input['overlay_opacity'] ) ? absint( $input['overlay_opacity'] ) : 85,
             'custom_css'      => isset( $input['custom_css'] ) ? sanitize_textarea_field( $input['custom_css'] ) : '',
@@ -89,27 +89,23 @@ class Onedev_Maintenance_Mode {
     }
 
     public function admin_assets( string $hook ) {
-        if ( 'settings_page_onedev-maintenance-mode' !== $hook ) return;
+        if ( 'settings_page_onedev-maintenance-mode' !== $hook ) {
+            return;
+        }
 
         wp_enqueue_style( 'onedev-admin-css', plugins_url( 'assets/css/admin.css', __FILE__ ), array(), '1.0.0' );
         wp_enqueue_style( 'wp-color-picker' );
         wp_enqueue_script( 'wp-color-picker' );
         wp_enqueue_media();
 
-        wp_add_inline_script( 'jquery-core', "
-            jQuery(document).ready(function($){
+        wp_add_inline_script(
+            'jquery-core',
+            "jQuery(document).ready(function($){
                 $('.onedev-color-picker').wpColorPicker();
-                
-                // Update opacity value display
-                $('#onedev_overlay_opacity').on('input', function() {
-                    $('#onedev_opacity_val').text($(this).val() + '%');
-                });
-
+                $('#onedev_overlay_opacity').on('input', function() { $('#onedev_opacity_val').text($(this).val() + '%'); });
                 $('.onedev-upload-btn').on('click', function(e){
                     e.preventDefault();
-                    let button = $(this);
-                    let targetInput = button.data('target');
-                    let targetPreview = button.data('preview');
+                    let button = $(this); let targetInput = button.data('target'); let targetPreview = button.data('preview');
                     let mediaFrame = wp.media({ title: 'Sélectionner une image', button: { text: 'Utiliser' }, multiple: false });
                     mediaFrame.on('select', function(){
                         const attachment = mediaFrame.state().get('selection').first().toJSON();
@@ -119,12 +115,10 @@ class Onedev_Maintenance_Mode {
                     mediaFrame.open();
                 });
                 $('.onedev-remove-btn').on('click', function(e){
-                    e.preventDefault();
-                    $($(this).data('target')).val('');
-                    $($(this).data('preview')).html('');
+                    e.preventDefault(); $($(this).data('target')).val(''); $($(this).data('preview')).html('');
                 });
-            });
-        " );
+            });"
+        );
     }
 
     public function settings_page() {
@@ -178,7 +172,6 @@ class Onedev_Maintenance_Mode {
                                 <th scope="row"><label for="onedev_brand_color">Couleur de la marque</label></th>
                                 <td>
                                     <input type="text" id="onedev_brand_color" class="onedev-color-picker" name="<?php echo esc_attr( $this->option_name ); ?>[brand_color]" value="<?php echo esc_attr( $settings['brand_color'] ); ?>">
-                                    <p class="description">Couleur du badge et des boutons.</p>
                                 </td>
                             </tr>
                             <tr>
@@ -223,13 +216,12 @@ class Onedev_Maintenance_Mode {
                                 <td>
                                     <input type="range" id="onedev_overlay_opacity" name="<?php echo esc_attr( $this->option_name ); ?>[overlay_opacity]" min="0" max="100" value="<?php echo esc_attr( $settings['overlay_opacity'] ); ?>" style="width: 200px; vertical-align: middle;">
                                     <span id="onedev_opacity_val" style="font-weight: 600; margin-left: 10px;"><?php echo esc_attr( $settings['overlay_opacity'] ); ?>%</span>
-                                    <p class="description">Assombrit ou éclaircit l'image de fond pour mieux faire ressortir le texte.</p>
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="onedev_custom_css">CSS Personnalisé</label></th>
                                 <td>
-                                    <textarea id="onedev_custom_css" name="<?php echo esc_attr( $this->option_name ); ?>[custom_css]" rows="4" style="font-family: monospace; background: #f0f0f1;" placeholder="Ex: body { font-family: 'Arial', sans-serif; }"><?php echo esc_textarea( $settings['custom_css'] ); ?></textarea>
+                                    <textarea id="onedev_custom_css" name="<?php echo esc_attr( $this->option_name ); ?>[custom_css]" rows="4" style="font-family: monospace; background: #f0f0f1;"><?php echo esc_textarea( $settings['custom_css'] ); ?></textarea>
                                 </td>
                             </tr>
                         </table>
@@ -287,28 +279,48 @@ class Onedev_Maintenance_Mode {
     }
 
     public function handle_contact_form() {
-        $name = isset($_POST['onedev_name']) ? sanitize_text_field($_POST['onedev_name']) : '';
-        $email = isset($_POST['onedev_email']) ? sanitize_email($_POST['onedev_email']) : '';
-        $message = isset($_POST['onedev_message']) ? sanitize_textarea_field($_POST['onedev_message']) : '';
+        if ( ! isset( $_POST['onedev_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['onedev_nonce'] ), 'onedev_contact_nonce' ) ) {
+            wp_send_json_error( 'Session expirée. Veuillez recharger la page.' );
+        }
 
-        if ( empty($name) || empty($email) || empty($message) ) wp_send_json_error("Veuillez remplir tous les champs.");
-        if ( ! is_email($email) ) wp_send_json_error("Adresse email invalide.");
+        $name    = isset( $_POST['onedev_name'] ) ? sanitize_text_field( wp_unslash( $_POST['onedev_name'] ) ) : '';
+        $email   = isset( $_POST['onedev_email'] ) ? sanitize_email( wp_unslash( $_POST['onedev_email'] ) ) : '';
+        $message = isset( $_POST['onedev_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['onedev_message'] ) ) : '';
+
+        if ( empty( $name ) || empty( $email ) || empty( $message ) ) {
+            wp_send_json_error( 'Veuillez remplir tous les champs.' );
+        }
+        if ( ! is_email( $email ) ) {
+            wp_send_json_error( 'Adresse email invalide.' );
+        }
 
         $settings = $this->get_settings();
-        $to = !empty($settings['email']) ? $settings['email'] : get_option('admin_email');
-        $subject = "Nouveau message de contact - " . get_bloginfo('name');
-        $body = "Nom: $name\nEmail: $email\n\nMessage:\n$message";
-        $headers = array('Reply-To: ' . $name . ' <' . $email . '>');
+        $to       = ! empty( $settings['email'] ) ? $settings['email'] : get_option( 'admin_email' );
+        $subject  = 'Nouveau message de contact - ' . get_bloginfo( 'name' );
+        $body     = "Nom: $name\nEmail: $email\n\nMessage:\n$message";
+        $headers  = array( 'Reply-To: ' . $name . ' <' . $email . '>' );
 
-        if ( wp_mail($to, $subject, $body, $headers) ) wp_send_json_success("Merci ! Votre message a été envoyé avec succès.");
-        else wp_send_json_error("Désolé, une erreur s'est produite lors de l'envoi.");
+        if ( wp_mail( $to, $subject, $body, $headers ) ) {
+            wp_send_json_success( 'Merci ! Votre message a été envoyé avec succès.' );
+        } else {
+            wp_send_json_error( "Désolé, une erreur s'est produite lors de l'envoi." );
+        }
     }
 
     public function clear_caches() {
-        if ( has_action( 'litespeed_purge_all' ) ) do_action( 'litespeed_purge_all' );
-        if ( function_exists( 'rocket_clean_domain' ) ) rocket_clean_domain();
-        if ( function_exists( 'wp_cache_clear_cache' ) ) wp_cache_clear_cache();
-        if ( function_exists( 'w3tc_pgcache_flush' ) ) w3tc_pgcache_flush();
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+        if ( has_action( 'litespeed_purge_all' ) ) {
+            do_action( 'litespeed_purge_all' );
+        }
+        if ( function_exists( 'rocket_clean_domain' ) ) {
+            rocket_clean_domain();
+        }
+        if ( function_exists( 'wp_cache_clear_cache' ) ) {
+            wp_cache_clear_cache();
+        }
+        if ( function_exists( 'w3tc_pgcache_flush' ) ) {
+            w3tc_pgcache_flush();
+        }
     }
 
     public function admin_notice() {
@@ -320,103 +332,106 @@ class Onedev_Maintenance_Mode {
 
     public function render_maintenance_page() {
         $settings = $this->get_settings();
+        
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $is_preview = isset( $_GET['preview_onedev_maintenance'] ) && current_user_can( 'manage_options' );
 
-        if ( empty( $settings['enabled'] ) && ! $is_preview ) return;
-        if ( current_user_can( 'manage_options' ) && ! $is_preview ) return;
+        if ( empty( $settings['enabled'] ) && ! $is_preview ) {
+            return;
+        }
+        if ( current_user_can( 'manage_options' ) && ! $is_preview ) {
+            return;
+        }
 
         nocache_headers();
         header( 'HTTP/1.1 503 Service Temporarily Unavailable' );
         header( 'Status: 503 Service Temporarily Unavailable' );
         header( 'Retry-After: 3600' );
 
-        $css_url = plugins_url( 'assets/css/maintenance.css', __FILE__ );
-        $ajax_url = admin_url( 'admin-ajax.php' );
-        $clean_message = strip_tags( $settings['message'] );
-
-        // Dynamic Styles Preparation
-        $brand_color = esc_attr( $settings['brand_color'] );
-        $bg_color    = esc_attr( $settings['bg_color'] );
-        $opacity_val = intval( $settings['overlay_opacity'] ) / 100;
+        $css_url        = plugins_url( 'assets/css/maintenance.css', __FILE__ );
+        $ajax_url       = admin_url( 'admin-ajax.php' );
+        $clean_message  = wp_strip_all_tags( $settings['message'], true );
         
-        $overlay_rgb = ( $settings['card_theme'] === 'dark' ) ? '0, 0, 0' : '255, 255, 255';
-        $dark_theme_css = '';
-
-        if ( $settings['card_theme'] === 'dark' ) {
-            $dark_theme_css = '
-            :root { --card-bg: #1f2937; --text-main: #f9fafb; --text-muted: #9ca3af; }
-            .contact-form { background: #374151; border-color: #4b5563; }
-            .contact-form input, .contact-form textarea { background: #1f2937; color: #fff; border-color: #4b5563; }
-            .contact-form input:focus, .contact-form textarea:focus { box-shadow: 0 0 0 3px rgba(255,255,255,0.1); }
-            .social-links a { background: #374151; }
-            ';
-        }
-
-        $logo_html = ! empty( $settings['logo'] ) ? '<div class="logo-container"><img src="' . esc_url( $settings['logo'] ) . '" alt="Logo" /></div>' : '';
-        $bg_html = ! empty( $settings['bg_image'] ) ? '<div class="bg-image" style="background-image: url(\'' . esc_url( $settings['bg_image'] ) . '\');"></div><div class="bg-overlay"></div>' : '';
+        $opacity_val    = intval( $settings['overlay_opacity'] ) / 100;
+        $overlay_rgb    = ( $settings['card_theme'] === 'dark' ) ? '0, 0, 0' : '255, 255, 255';
+        $dark_theme_css = ( $settings['card_theme'] === 'dark' ) ? ':root { --card-bg: #1f2937; --text-main: #f9fafb; --text-muted: #9ca3af; } .contact-form { background: #374151; border-color: #4b5563; } .contact-form input, .contact-form textarea { background: #1f2937; color: #fff; border-color: #4b5563; } .contact-form input:focus, .contact-form textarea:focus { box-shadow: 0 0 0 3px rgba(255,255,255,0.1); } .social-links a { background: #374151; }' : '';
         
-        $form_html = '';
-        if ( ! empty( $settings['enable_form'] ) ) {
-            $form_html = '
-            <div class="contact-form">
-                <form id="onedev-contact-form">
-                    <input type="text" name="onedev_name" placeholder="Votre nom" required>
-                    <input type="email" name="onedev_email" placeholder="Votre adresse email" required>
-                    <textarea name="onedev_message" placeholder="Votre message..." rows="3" required></textarea>
-                    <input type="hidden" name="action" value="onedev_maintenance_contact">
-                    <button type="submit" id="onedev-submit-btn" class="submit-btn">Envoyer le message</button>
-                    <div id="onedev-form-msg" class="form-message"></div>
-                </form>
-            </div>';
-        }
-
-        $footer_html = '';
-        if ( ! empty( $settings['email'] ) || ! empty( $settings['facebook'] ) || ! empty( $settings['instagram'] ) || ! empty( $settings['linkedin'] ) ) {
-            $footer_html .= '<div class="footer-extras">';
-            if ( ! empty( $settings['email'] ) ) $footer_html .= '<div class="contact-email">Nous contacter : <a href="mailto:' . esc_attr( $settings['email'] ) . '">' . esc_html( $settings['email'] ) . '</a></div>';
-            if ( ! empty( $settings['facebook'] ) || ! empty( $settings['instagram'] ) || ! empty( $settings['linkedin'] ) ) {
-                $footer_html .= '<div class="social-links">';
-                if ( ! empty( $settings['facebook'] ) ) $footer_html .= '<a href="' . esc_url( $settings['facebook'] ) . '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>';
-                if ( ! empty( $settings['instagram'] ) ) $footer_html .= '<a href="' . esc_url( $settings['instagram'] ) . '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>';
-                if ( ! empty( $settings['linkedin'] ) ) $footer_html .= '<a href="' . esc_url( $settings['linkedin'] ) . '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>';
-                $footer_html .= '</div>';
-            }
-            $footer_html .= '</div>';
-        }
-
-        echo '<!DOCTYPE html>
-        <html lang="' . esc_attr( get_bloginfo( 'language' ) ) . '">
+        $contact_nonce  = wp_create_nonce( 'onedev_contact_nonce' );
+        ?>
+        <!DOCTYPE html>
+        <html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta name="robots" content="noindex, follow">
-            <meta name="description" content="' . esc_attr( wp_trim_words( $clean_message, 20 ) ) . '">
-            <title>' . esc_html( $settings['title'] ) . ' - ' . esc_html( get_bloginfo( 'name' ) ) . '</title>
-            <link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.5.0">
+            <meta name="description" content="<?php echo esc_attr( wp_trim_words( $clean_message, 20 ) ); ?>">
+            <title><?php echo esc_html( $settings['title'] ); ?> - <?php echo esc_html( get_bloginfo( 'name' ) ); ?></title>
+            
+            <!-- phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -->
+            <link rel="stylesheet" href="<?php echo esc_url( $css_url ); ?>?v=1.5.1">
             <style>
                 :root { 
-                    --brand-color: ' . $brand_color . '; 
-                    --primary-bg: ' . $bg_color . ';
+                    --brand-color: <?php echo esc_attr( $settings['brand_color'] ); ?>; 
+                    --primary-bg: <?php echo esc_attr( $settings['bg_color'] ); ?>;
                 }
-                .bg-overlay { background: rgba(' . $overlay_rgb . ', ' . $opacity_val . ') !important; }
-                ' . $dark_theme_css . '
-                ' . wp_strip_all_tags( $settings['custom_css'] ) . '
+                .bg-overlay { background: rgba(<?php echo esc_attr( $overlay_rgb ); ?>, <?php echo esc_attr( $opacity_val ); ?>) !important; }
+                <?php echo wp_strip_all_tags( $dark_theme_css ); ?>
+                <?php echo wp_strip_all_tags( $settings['custom_css'] ); ?>
             </style>
         </head>
         <body>
-            ' . $bg_html . '
+            <?php if ( ! empty( $settings['bg_image'] ) ) : ?>
+                <div class="bg-image" style="background-image: url('<?php echo esc_url( $settings['bg_image'] ); ?>');"></div>
+                <div class="bg-overlay"></div>
+            <?php endif; ?>
+            
             <main class="box">
-                ' . $logo_html . '
-                <h1>' . esc_html( $settings['title'] ) . '</h1>
-                <p>' . nl2br( esc_html( $settings['message'] ) ) . '</p>
-                <div class="badge">' . esc_html( $settings['badge_text'] ) . '</div>
-                ' . $form_html . '
-                ' . $footer_html . '
+                <?php if ( ! empty( $settings['logo'] ) ) : ?>
+                    <div class="logo-container"><img src="<?php echo esc_url( $settings['logo'] ); ?>" alt="Logo" /></div>
+                <?php endif; ?>
+                
+                <h1><?php echo esc_html( $settings['title'] ); ?></h1>
+                <p><?php echo nl2br( esc_html( $settings['message'] ) ); ?></p>
+                <div class="badge"><?php echo esc_html( $settings['badge_text'] ); ?></div>
+                
+                <?php if ( ! empty( $settings['enable_form'] ) ) : ?>
+                    <div class="contact-form">
+                        <form id="onedev-contact-form">
+                            <input type="text" name="onedev_name" placeholder="Votre nom" required>
+                            <input type="email" name="onedev_email" placeholder="Votre adresse email" required>
+                            <textarea name="onedev_message" placeholder="Votre message..." rows="3" required></textarea>
+                            <input type="hidden" name="action" value="onedev_maintenance_contact">
+                            <input type="hidden" name="onedev_nonce" value="<?php echo esc_attr( $contact_nonce ); ?>">
+                            <button type="submit" id="onedev-submit-btn" class="submit-btn">Envoyer le message</button>
+                            <div id="onedev-form-msg" class="form-message"></div>
+                        </form>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ( ! empty( $settings['email'] ) || ! empty( $settings['facebook'] ) || ! empty( $settings['instagram'] ) || ! empty( $settings['linkedin'] ) ) : ?>
+                    <div class="footer-extras">
+                        <?php if ( ! empty( $settings['email'] ) ) : ?>
+                            <div class="contact-email">Nous contacter : <a href="mailto:<?php echo esc_attr( $settings['email'] ); ?>"><?php echo esc_html( $settings['email'] ); ?></a></div>
+                        <?php endif; ?>
+                        
+                        <?php if ( ! empty( $settings['facebook'] ) || ! empty( $settings['instagram'] ) || ! empty( $settings['linkedin'] ) ) : ?>
+                            <div class="social-links">
+                                <?php if ( ! empty( $settings['facebook'] ) ) : ?>
+                                    <a href="<?php echo esc_url( $settings['facebook'] ); ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+                                <?php endif; ?>
+                                <?php if ( ! empty( $settings['instagram'] ) ) : ?>
+                                    <a href="<?php echo esc_url( $settings['instagram'] ); ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
+                                <?php endif; ?>
+                                <?php if ( ! empty( $settings['linkedin'] ) ) : ?>
+                                    <a href="<?php echo esc_url( $settings['linkedin'] ); ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </main>
-            ';
-
-            if ( ! empty( $settings['enable_form'] ) ) {
-                echo '
+            
+            <?php if ( ! empty( $settings['enable_form'] ) ) : ?>
                 <script>
                 document.getElementById("onedev-contact-form").addEventListener("submit", function(e) {
                     e.preventDefault();
@@ -424,49 +439,39 @@ class Onedev_Maintenance_Mode {
                     var msgBox = document.getElementById("onedev-form-msg");
                     var formData = new FormData(this);
 
-                    btn.disabled = true;
-                    btn.innerText = "Envoi en cours...";
-                    msgBox.className = "form-message";
-                    msgBox.innerText = "";
+                    btn.disabled = true; btn.innerText = "Envoi en cours..."; msgBox.className = "form-message"; msgBox.innerText = "";
 
-                    fetch("' . esc_url($ajax_url) . '", { method: "POST", body: formData })
+                    fetch("<?php echo esc_url( $ajax_url ); ?>", { method: "POST", body: formData })
                     .then(response => response.json())
                     .then(data => {
-                        btn.disabled = false;
-                        btn.innerText = "Envoyer le message";
-                        if(data.success) {
-                            msgBox.classList.add("success");
-                            msgBox.innerText = data.data;
-                            this.reset();
-                        } else {
-                            msgBox.classList.add("error");
-                            msgBox.innerText = data.data || "Une erreur est survenue.";
-                        }
+                        btn.disabled = false; btn.innerText = "Envoyer le message";
+                        if(data.success) { msgBox.classList.add("success"); msgBox.innerText = data.data; this.reset(); }
+                        else { msgBox.classList.add("error"); msgBox.innerText = data.data || "Une erreur est survenue."; }
                     })
                     .catch(error => {
-                        btn.disabled = false;
-                        btn.innerText = "Envoyer le message";
-                        msgBox.classList.add("error");
-                        msgBox.innerText = "Erreur de connexion serveur.";
+                        btn.disabled = false; btn.innerText = "Envoyer le message"; msgBox.classList.add("error"); msgBox.innerText = "Erreur de connexion serveur.";
                     });
                 });
-                </script>';
-            }
-
-        echo '
+                </script>
+            <?php endif; ?>
         </body>
-        </html>';
+        </html>
+        <?php
         exit;
     }
 
     private function disable_feeds() {
         $feeds = array( 'do_feed', 'do_feed_rdf', 'do_feed_rss', 'do_feed_rss2', 'do_feed_atom', 'do_feed_rss2_comments', 'do_feed_atom_comments' );
-        foreach ( $feeds as $feed ) add_action( $feed, array( $this, 'feed_die_message' ), 1 );
+        foreach ( $feeds as $feed ) {
+            add_action( $feed, array( $this, 'feed_die_message' ), 1 );
+        }
     }
 
     public function feed_die_message() {
         $settings = $this->get_settings();
-        if ( empty( $settings['enabled'] ) ) return;
+        if ( empty( $settings['enabled'] ) ) {
+            return;
+        }
         wp_die( 'Le site est en maintenance.', 'Maintenance', array( 'response' => 503 ) );
     }
 }
