@@ -308,10 +308,12 @@ class Onedev_Maintenance_Mode {
     }
 
     public function clear_caches() {
-        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+        // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
         if ( has_action( 'litespeed_purge_all' ) ) {
             do_action( 'litespeed_purge_all' );
         }
+        // phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
         if ( function_exists( 'rocket_clean_domain' ) ) {
             rocket_clean_domain();
         }
@@ -367,8 +369,10 @@ class Onedev_Maintenance_Mode {
             <meta name="description" content="<?php echo esc_attr( wp_trim_words( $clean_message, 20 ) ); ?>">
             <title><?php echo esc_html( $settings['title'] ); ?> - <?php echo esc_html( get_bloginfo( 'name' ) ); ?></title>
             
-            <!-- phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -->
-            <link rel="stylesheet" href="<?php echo esc_url( $css_url ); ?>?v=1.5.1">
+            <?php
+            // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet
+            echo '<link rel="stylesheet" href="' . esc_url( $css_url ) . '?v=1.5.1">';
+            ?>
             <style>
                 :root { 
                     --brand-color: <?php echo esc_attr( $settings['brand_color'] ); ?>; 
