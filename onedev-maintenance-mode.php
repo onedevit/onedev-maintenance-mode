@@ -228,14 +228,14 @@ class Onedev_Maintenance_Mode {
 
         $logo_html = '';
         if ( ! empty( $settings['logo'] ) ) {
-            $logo_html = '<div style=\"margin-bottom:20px;\"><img src=\"' . esc_url( $settings['logo'] ) . '\" alt=\"Logo\" style=\"max-width:120px;height:auto;margin:0 auto;\" /></div>';
+            $logo_html = '<div style="margin-bottom:20px;"><img src="' . esc_url( $settings['logo'] ) . '" alt="Logo" style="max-width:120px;height:auto;margin:0 auto;" /></div>';
         }
 
         echo '<!DOCTYPE html>
-        <html lang=\"fr\">
+        <html lang="fr">
         <head>
-            <meta charset=\"UTF-8\">
-            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Maintenance</title>
             <style>
                 body{
@@ -284,11 +284,11 @@ class Onedev_Maintenance_Mode {
             </style>
         </head>
         <body>
-            <div class=\"box\">
+            <div class="box">
                 ' . $logo_html . '
                 <h1>' . esc_html( $settings['title'] ) . '</h1>
                 <p>' . nl2br( esc_html( $settings['message'] ) ) . '</p>
-                <div class=\"badge\">' . esc_html( $settings['badge_text'] ) . '</div>
+                <div class="badge">' . esc_html( $settings['badge_text'] ) . '</div>
             </div>
         </body>
         </html>';
