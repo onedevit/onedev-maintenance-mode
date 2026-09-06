@@ -375,8 +375,16 @@ class Onedev_Maintenance_Mode {
                     --primary-bg: <?php echo esc_attr( $settings['bg_color'] ); ?>;
                 }
                 .bg-overlay { background: rgba(<?php echo esc_attr( $overlay_rgb ); ?>, <?php echo esc_attr( $opacity_val ); ?>) !important; }
-                <?php echo wp_strip_all_tags( $dark_theme_css ); ?>
-                <?php echo wp_strip_all_tags( $settings['custom_css'] ); ?>
+                
+                <?php
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                echo wp_strip_all_tags( $dark_theme_css ); 
+                ?>
+                
+                <?php 
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                echo wp_strip_all_tags( $settings['custom_css'] ); 
+                ?>
             </style>
         </head>
         <body>
