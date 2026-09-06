@@ -29,7 +29,6 @@ class Onedev_Maintenance_Mode {
         add_action( 'admin_notices', array( $this, 'admin_notice' ) );
         add_action( 'template_redirect', array( $this, 'render_maintenance_page' ) );
 
-        // AJAX Handlers for Contact Form
         add_action( 'wp_ajax_nopriv_onedev_maintenance_contact', array( $this, 'handle_contact_form' ) );
         add_action( 'wp_ajax_onedev_maintenance_contact', array( $this, 'handle_contact_form' ) );
 
@@ -95,6 +94,9 @@ class Onedev_Maintenance_Mode {
     public function admin_assets( string $hook ) {
         if ( 'settings_page_onedev-maintenance-mode' !== $hook ) return;
 
+        // استدعاء ملف الـ CSS الخاص بلوحة التحكم
+        wp_enqueue_style( 'onedev-admin-css', plugins_url( 'assets/css/admin.css', __FILE__ ), array(), '1.0.0' );
+
         wp_enqueue_style( 'wp-color-picker' );
         wp_enqueue_script( 'wp-color-picker' );
         wp_enqueue_media();
@@ -127,124 +129,6 @@ class Onedev_Maintenance_Mode {
     public function settings_page() {
         $settings = $this->get_settings();
         ?>
-        <style>
-            .onedev-admin-wrap {
-                max-width: 850px;
-                margin-top: 20px;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-            }
-            .onedev-header {
-                display: flex;
-                align-items: center;
-                margin-bottom: 20px;
-            }
-            .onedev-header h1 {
-                margin: 0;
-                font-size: 24px;
-                font-weight: 600;
-                color: #1d2327;
-            }
-            .onedev-card {
-                background: #fff;
-                border: 1px solid #c3c4c7;
-                border-radius: 8px;
-                box-shadow: 0 1px 1px rgba(0,0,0,0.04);
-                padding: 0;
-                margin-bottom: 24px;
-                overflow: hidden;
-            }
-            .onedev-card-header {
-                background: #f6f7f7;
-                border-bottom: 1px solid #c3c4c7;
-                padding: 15px 20px;
-                margin: 0;
-                font-size: 16px;
-                font-weight: 600;
-                color: #1d2327;
-            }
-            .onedev-card-body {
-                padding: 20px;
-            }
-            .onedev-admin-wrap .form-table {
-                margin: 0;
-            }
-            .onedev-admin-wrap .form-table th {
-                padding: 15px 10px 15px 0;
-                width: 240px;
-                font-weight: 500;
-                color: #3c434a;
-            }
-            .onedev-admin-wrap input[type="text"],
-            .onedev-admin-wrap input[type="email"],
-            .onedev-admin-wrap input[type="url"],
-            .onedev-admin-wrap textarea {
-                width: 100%;
-                max-width: 100%;
-                border-radius: 4px;
-                border: 1px solid #8c8f94;
-                padding: 8px 12px;
-                box-shadow: inset 0 1px 2px rgba(0,0,0,.03);
-            }
-            .onedev-action-bar {
-                background: #fff;
-                border: 1px solid #c3c4c7;
-                border-radius: 8px;
-                padding: 15px 20px;
-                display: flex;
-                gap: 15px;
-                align-items: center;
-                box-shadow: 0 1px 1px rgba(0,0,0,0.04);
-                margin-bottom: 40px;
-            }
-            /* Custom Toggle Switch */
-            .onedev-toggle {
-                position: relative;
-                display: inline-block;
-                width: 44px;
-                height: 24px;
-                vertical-align: middle;
-            }
-            .onedev-toggle input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-            }
-            .onedev-slider {
-                position: absolute;
-                cursor: pointer;
-                top: 0; left: 0; right: 0; bottom: 0;
-                background-color: #ccc;
-                transition: .4s;
-                border-radius: 24px;
-            }
-            .onedev-slider:before {
-                position: absolute;
-                content: "";
-                height: 18px;
-                width: 18px;
-                left: 3px;
-                bottom: 3px;
-                background-color: white;
-                transition: .4s;
-                border-radius: 50%;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            }
-            .onedev-toggle input:checked + .onedev-slider {
-                background-color: #2271b1;
-            }
-            .onedev-toggle input:focus + .onedev-slider {
-                box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.4);
-            }
-            .onedev-toggle input:checked + .onedev-slider:before {
-                transform: translateX(20px);
-            }
-            .onedev-toggle-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-        </style>
-
         <div class="wrap onedev-admin-wrap">
             <div class="onedev-header">
                 <h1>⚙️ Onedev Maintenance Mode Pro</h1>
@@ -253,7 +137,6 @@ class Onedev_Maintenance_Mode {
             <form method="post" action="options.php">
                 <?php settings_fields( 'onedev_maintenance_group' ); ?>
 
-                <!-- CARTE 1: Configuration Générale -->
                 <div class="onedev-card">
                     <h2 class="onedev-card-header">1. Configuration Générale</h2>
                     <div class="onedev-card-body">
@@ -286,7 +169,6 @@ class Onedev_Maintenance_Mode {
                     </div>
                 </div>
 
-                <!-- CARTE 2: Apparence & Design -->
                 <div class="onedev-card">
                     <h2 class="onedev-card-header">2. Apparence & Design</h2>
                     <div class="onedev-card-body">
@@ -321,7 +203,6 @@ class Onedev_Maintenance_Mode {
                     </div>
                 </div>
 
-                <!-- CARTE 3: Contact & Réseaux Sociaux -->
                 <div class="onedev-card">
                     <h2 class="onedev-card-header">3. Contact & Réseaux Sociaux</h2>
                     <div class="onedev-card-body">
@@ -359,7 +240,6 @@ class Onedev_Maintenance_Mode {
                     </div>
                 </div>
 
-                <!-- BARRE D'ACTIONS -->
                 <div class="onedev-action-bar">
                     <?php submit_button( 'Enregistrer les modifications', 'primary', 'submit', false ); ?>
                     <a href="<?php echo esc_url( home_url( '?preview_onedev_maintenance=1' ) ); ?>" target="_blank" class="button button-secondary">
@@ -369,7 +249,6 @@ class Onedev_Maintenance_Mode {
                         </span>
                     </a>
                 </div>
-
             </form>
         </div>
         <?php
