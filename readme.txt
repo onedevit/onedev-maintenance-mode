@@ -1,4 +1,4 @@
-=== Onedev Mode Maintenance Simple ===
+=== Onedev Maintenance Mode ===
 Contributors: onedev.ovh
 Tags: maintenance, coming soon, offline, under construction
 Requires at least: 6.6

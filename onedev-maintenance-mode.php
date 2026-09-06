@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Onedev Mode Maintenance Simple
+ * Plugin Name: Onedev Maintenance Mode
  * Description: Un plugin léger et avancé de mode maintenance : activation, texte, logo, couleurs, image de fond, réseaux sociaux et formulaire de contact AJAX.
  * Version: 1.5.1
  * Author: onedev.ovh
