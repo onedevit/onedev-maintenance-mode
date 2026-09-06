@@ -1,12 +1,17 @@
 <?php
 /**
  * Plugin Name: Onedev Mode Maintenance Simple
- * Plugin URI: https://onedev.ovh
  * Description: Un plugin léger de mode maintenance avec page de réglages : activation, texte personnalisé et logo.
  * Version: 1.1.0
- * Author: Onedev
+ * Author: onedev.ovh
  * Author URI: https://onedev.ovh
+ * Requires PHP: 8.1
+ * Requires at least: 6.6
+ * Tested up to: 7.1
  * Text Domain: onedev-maintenance-mode
+ * Plugin URI: https://onedev.ovh
+ * Domain Path: /languages/
+ * License: GPL2
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -50,7 +55,7 @@ class Onedev_Maintenance_Mode {
         );
     }
 
-    public function sanitize_settings( $input ) {
+    public function sanitize_settings( array $input ) {
         return array(
             'enabled'    => ! empty( $input['enabled'] ) ? 1 : 0,
             'title'      => isset( $input['title'] ) ? sanitize_text_field( $input['title'] ) : '',
@@ -70,7 +75,7 @@ class Onedev_Maintenance_Mode {
         );
     }
 
-    public function admin_assets( $hook ) {
+    public function admin_assets( string $hook ) {
         if ( 'settings_page_onedev-maintenance-mode' !== $hook ) {
             return;
         }
